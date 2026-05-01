@@ -1,0 +1,13 @@
+# Virtualenv
+.venv/
+venv/
+
+# Environment variables
+.env
+
+# Qodo
+.qodo
+
+# OS
+.DS_Store
+
