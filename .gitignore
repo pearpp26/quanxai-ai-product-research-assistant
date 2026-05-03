@@ -11,7 +11,6 @@ venv/
 # OS
 .DS_Store
 
-
 # SQLite runtime DB
 data/assistant.db
 data/assistant.db-journal
