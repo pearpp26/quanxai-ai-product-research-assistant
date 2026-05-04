@@ -14,3 +14,9 @@ venv/
 # SQLite runtime DB
 data/assistant.db
 data/assistant.db-journal
+
+# Load test results
+load_tests/results_*.csv
+
+# Pytest
+.pytest_cache
