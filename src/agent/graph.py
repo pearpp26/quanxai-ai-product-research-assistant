@@ -17,7 +17,6 @@ load_dotenv()
 
 MODEL_ID = "meta-llama/llama-3.3-70b-instruct"
 
-
 @tool
 def search_product_catalog(query: str, limit: int = 5) -> str:
     """Use this tool to answer questions about products in *our* internal
