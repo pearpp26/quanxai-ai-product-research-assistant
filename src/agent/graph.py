@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 
 from dotenv import load_dotenv
@@ -17,13 +18,19 @@ load_dotenv()
 
 MODEL_ID = "meta-llama/llama-3.3-70b-instruct"
 
+
+def _to_json(payload: dict) -> str:
+    return json.dumps(payload, indent=2, default=str)
+
+
 @tool
 def search_product_catalog(query: str, limit: int = 5) -> str:
     """Use this tool to answer questions about products in *our* internal
     catalog: stock levels, prices, ratings, brands, or descriptions.
     Examples: 'What wireless headphones do we have?', 'Show me AudioMax
-    products'."""
-    return _search_catalog(query, limit)
+    products'. Returns a JSON object with `answer`, `products`, `count`,
+    and `sources`."""
+    return _to_json(_search_catalog(query, limit))
 
 
 @tool
@@ -31,8 +38,9 @@ def search_web(query: str, max_results: int = 5) -> str:
     """Use this tool to find *current external* information: market prices,
     competitor products, industry trends, or any information not in our
     internal catalog. Examples: 'Current market price for noise-cancelling
-    headphones?', 'Latest reviews for Sony WH-1000XM5'."""
-    return _search_web(query, max_results)
+    headphones?', 'Latest reviews for Sony WH-1000XM5'. Returns a JSON
+    object with `answer`, `results`, `count`, and `sources`."""
+    return _to_json(_search_web(query, max_results))
 
 
 @tool
@@ -43,8 +51,9 @@ def analyze_profit_margins(
     """Use this tool to compute and analyze profit margins for our products
     using deterministic math. Accepts optional `category` and `max_margin`
     filters. Examples: 'Which products have the lowest profit margins?',
-    'Show margins below 40% for Electronics'."""
-    return _analyze_margins(category, max_margin)
+    'Show margins below 40% for Electronics'. Returns a JSON object with
+    `answer`, `summary`, `products`, `filters`, and `sources`."""
+    return _to_json(_analyze_margins(category, max_margin))
 
 
 SYSTEM_PROMPT = """You are a product research assistant for an e-commerce team.
@@ -103,9 +112,11 @@ Example B — multiple parallel tools:
       search_web(query="Acme speaker market price competitors")
     ]
 
-After you receive tool results, synthesize a clear, concise final answer
-for the user. Cite concrete numbers and product names from the tool output
-when relevant."""
+Tool results come back as JSON objects (with fields like `answer`,
+`products`, `results`, `summary`, `sources`). Read them as structured data
+— do NOT echo the raw JSON back to the user. Synthesize a clear, concise
+final answer in plain prose, citing concrete numbers and product names
+from the JSON when relevant."""
 
 
 tools = [search_product_catalog, search_web, analyze_profit_margins]

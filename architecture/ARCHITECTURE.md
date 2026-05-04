@@ -21,18 +21,29 @@ python src/ingest.py
 
 Key properties:
 
-- **Idempotent upsert.** `src/ingest.py` derives a stable integer point ID
-  from the CSV's `product_id` (e.g. `P-42` → `42`). Qdrant `upsert` semantics
-  mean an existing ID is overwritten, a new ID is inserted, and an unchanged
-  row is rewritten with the same content — no full re-index is required.
-- **Embedding cost is proportional to row count.** Each run re-embeds all
-  rows (the script does not diff the CSV against Qdrant). For a catalog of
-  ~100 products this is acceptable; for larger catalogs we would compare a
-  hash of `build_embedding_text(row)` against the stored payload and skip
-  unchanged rows.
-- **Hard-deletes are not propagated.** If a product is removed from the
-  CSV, its point remains in Qdrant. Documented as a known limitation; in
-  production we would track CSV vs Qdrant ID sets and delete the diff.
+- **Chunked descriptions.** Each row's `description` is split by
+  `chunk_text()` (sentence/word-boundary aware, `chunk_size=400`,
+  `overlap=50`). Short descriptions return a single chunk; longer ones
+  yield multiple. Every chunk is embedded with the product header
+  (`name | category | brand | chunk`) so each vector retains product
+  context. The matching `chunk_text` is stored on the payload for
+  traceability.
+- **Idempotent upsert with stable per-chunk IDs.** Each chunk's Qdrant
+  point ID is `product_int_id * 1000 + chunk_index` (e.g. `PROD-042`
+  chunk 0 → `42000`, chunk 1 → `42001`). Re-running the script overwrites
+  existing chunks in place — no full re-index required.
+- **Chunk dedup at query time.** `search_product_catalog` over-fetches
+  `limit * 3` candidates and collapses them to one entry per `product_id`,
+  keeping the highest-scoring chunk. This prevents multi-chunk products
+  from crowding the top-k.
+- **Embedding cost is proportional to chunk count.** Each run re-embeds
+  every chunk (the script does not diff against Qdrant). For ~100 products
+  this is fine; at scale we would hash each chunk and skip unchanged ones.
+- **Hard-deletes and orphan chunks are not propagated.** Rows removed
+  from the CSV remain in Qdrant, and if a description shrinks to fewer
+  chunks than the previous run the trailing chunks become orphans.
+  Documented limitations; in production we would diff CSV-derived chunk
+  IDs against the collection and delete the difference.
 
 ---
 
