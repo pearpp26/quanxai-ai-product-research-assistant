@@ -39,7 +39,7 @@ User → POST /query (FastAPI)
 
 - Python 3.11+ (project tested with 3.12)
 - Docker & Docker Compose
-- API keys for: OpenRouter, Cohere, Tavily
+- API keys for: OpenRouter, Cohere, Tavily (Attached keys in email)
 
 ## Setup
 
@@ -60,7 +60,7 @@ User → POST /query (FastAPI)
    pip install -r requirements.txt
    ```
 
-4. Create `.env` from the example and fill in your keys:
+4. Create `.env` from the example and fill in your keys (Attached keys in email):
    ```bash
    cp .env.example .env
    # then edit .env and set:
