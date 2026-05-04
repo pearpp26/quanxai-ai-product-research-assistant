@@ -57,7 +57,12 @@ User → POST /query (FastAPI)
 
 3. Install dependencies:
    ```bash
+   # Using standard pip
    pip install -r requirements.txt
+
+   # OR using uv (recommended for much faster installation)
+   pip install uv
+   uv pip install -r requirements.txt
    ```
 
 4. Create `.env` from the example and fill in your keys (Attached keys in email):
